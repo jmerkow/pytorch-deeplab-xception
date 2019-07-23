@@ -1,18 +1,21 @@
+from __future__ import absolute_import
+
 import argparse
 import os
 import numpy as np
 from tqdm import tqdm
 
-from mypath import Path
-from dataloaders import make_data_loader
-from modeling.sync_batchnorm.replicate import patch_replication_callback
-from modeling.deeplab import *
-from utils.loss import SegmentationLosses
-from utils.calculate_weights import calculate_weigths_labels
-from utils.lr_scheduler import LR_Scheduler
-from utils.saver import Saver
-from utils.summaries import TensorboardSummary
-from utils.metrics import Evaluator
+from .mypath import Path
+from .dataloaders import make_data_loader
+from .modeling.sync_batchnorm.replicate import patch_replication_callback
+from .modeling.deeplab import *
+from .utils.loss import SegmentationLosses
+from .utils.calculate_weights import calculate_weigths_labels
+from .utils.lr_scheduler import LR_Scheduler
+from .utils.saver import Saver
+from .utils.summaries import TensorboardSummary
+from .utils.metrics import Evaluator
+
 
 class Trainer(object):
     def __init__(self, args):
@@ -30,8 +33,8 @@ class Trainer(object):
         self.train_loader, self.val_loader, self.test_loader, self.nclass = make_data_loader(args, **kwargs)
 
         # Define network
-        model = DeepLab(num_classes=self.nclass,
-                        backbone=args.backbone,
+        model = DeepLab(classes=self.nclass,
+                        encoder=args.backbone,
                         output_stride=args.out_stride,
                         sync_bn=args.sync_bn,
                         freeze_bn=args.freeze_bn)

@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
-from modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 
 def fixed_padding(inputs, kernel_size, dilation):
     kernel_size_effective = kernel_size + (kernel_size - 1) * (dilation - 1)
@@ -96,7 +96,7 @@ class AlignedXception(nn.Module):
     Modified Alighed Xception
     """
     def __init__(self, output_stride, BatchNorm,
-                 pretrained=True):
+                 pretrained=True, model_dir=None):
         super(AlignedXception, self).__init__()
 
         if output_stride == 16:
@@ -177,7 +177,7 @@ class AlignedXception(nn.Module):
 
         # Load pretrained model
         if pretrained:
-            self._load_pretrained_model()
+            self._load_pretrained_model(model_dir=model_dir)
 
     def forward(self, x):
         # Entry flow
@@ -244,8 +244,9 @@ class AlignedXception(nn.Module):
                 m.bias.data.zero_()
 
 
-    def _load_pretrained_model(self):
-        pretrain_dict = model_zoo.load_url('http://data.lip6.fr/cadene/pretrainedmodels/xception-b5690688.pth')
+    def _load_pretrained_model(self, model_dir=None):
+        pretrain_dict = model_zoo.load_url('http://data.lip6.fr/cadene/pretrainedmodels/xception-b5690688.pth',
+                                           model_dir=model_dir)
         model_dict = {}
         state_dict = self.state_dict()
 

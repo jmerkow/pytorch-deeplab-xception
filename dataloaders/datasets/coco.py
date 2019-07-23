@@ -7,7 +7,7 @@ import os
 from pycocotools.coco import COCO
 from pycocotools import mask
 from torchvision import transforms
-from dataloaders import custom_transforms as tr
+from deeplab_xception.dataloaders import custom_transforms as tr
 from PIL import Image, ImageFile
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 
