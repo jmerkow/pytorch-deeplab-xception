@@ -1,10 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+
 from deeplab_xception.modeling.aspp import build_aspp
-from deeplab_xception.modeling.decoder import build_decoder
 from deeplab_xception.modeling.backbone import build_backbone
+from deeplab_xception.modeling.decoder import build_decoder
+from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
 
 
 class Flatten(nn.Module):
@@ -13,7 +14,7 @@ class Flatten(nn.Module):
 
 
 class DeepLab(nn.Module):
-    def __init__(self, encoder='resnet', output_stride=16, classes=21,
+    def __init__(self, encoder='resnet', output_stride=16, classes=1,
                  sync_bn=True, freeze_bn=False, model_dir=None, activation='sigmoid', encoder_classify=False,
                  **kwargs):
         print(kwargs)
@@ -28,16 +29,29 @@ class DeepLab(nn.Module):
         else:
             BatchNorm = nn.BatchNorm2d
 
-        if encoder == 'drn':
-            inplanes = 512
-        elif encoder == 'mobilenet':
-            inplanes = 320
-        else:
-            inplanes = 2048
+        inplanes_map = {
+            'drn': 512,
+            'mobilenet': 320,
+            'resnet101': 2048,
+            'resnet34': 512,
+            'xception': 2048
+
+        }
+
+        low_level_inplanes_map = {
+            'resnet101': 256,
+            'resnet101': 256,
+            'xception': 128,
+            'mobilenet': 24
+
+        }
+
+        inplanes = inplanes_map.get(encoder, 2048)
+        low_level_inplanes = low_level_inplanes_map[encoder]
 
         self.backbone = build_backbone(encoder, output_stride, BatchNorm, model_dir=model_dir)
-        self.aspp = build_aspp(encoder, output_stride, BatchNorm)
-        self.decoder = build_decoder(classes, encoder, BatchNorm)
+        self.aspp = build_aspp(inplanes, output_stride, BatchNorm)
+        self.decoder = build_decoder(classes, low_level_inplanes, BatchNorm)
 
         if callable(activation) or activation is None:
             self.activation = activation
