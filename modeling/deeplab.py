@@ -109,7 +109,7 @@ class DeepLab(nn.Module):
                 mask, score = mask
             if self.activation:
                 mask = self.activation(mask)
-                if score:
+                if score is not None:
                     score = self.activation(score)
             if self.encoder_classify:
                 x = [mask, score]
