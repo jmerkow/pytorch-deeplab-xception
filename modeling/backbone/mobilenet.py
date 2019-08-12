@@ -1,9 +1,10 @@
 import torch
-import torch.nn.functional as F
 import torch.nn as nn
-import math
-from modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
+
+from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+
 
 def conv_bn(inp, oup, stride, BatchNorm):
     return nn.Sequential(
@@ -68,7 +69,7 @@ class InvertedResidual(nn.Module):
 
 
 class MobileNetV2(nn.Module):
-    def __init__(self, output_stride=8, BatchNorm=None, width_mult=1., pretrained=True):
+    def __init__(self, output_stride=8, BatchNorm=None, width_mult=1., pretrained=True, model_dir=None):
         super(MobileNetV2, self).__init__()
         block = InvertedResidual
         input_channel = 32
@@ -110,7 +111,7 @@ class MobileNetV2(nn.Module):
         self._initialize_weights()
 
         if pretrained:
-            self._load_pretrained_model()
+            self._load_pretrained_model(model_dir=model_dir)
 
         self.low_level_features = self.features[0:4]
         self.high_level_features = self.features[4:]
@@ -120,8 +121,8 @@ class MobileNetV2(nn.Module):
         x = self.high_level_features(low_level_feat)
         return x, low_level_feat
 
-    def _load_pretrained_model(self):
-        pretrain_dict = model_zoo.load_url('http://jeff95.me/models/mobilenet_v2-6a65762b.pth')
+    def _load_pretrained_model(self, model_dir=None):
+        pretrain_dict = model_zoo.load_url('http://jeff95.me/models/mobilenet_v2-6a65762b.pth', model_dir=model_dir)
         model_dict = {}
         state_dict = self.state_dict()
         for k, v in pretrain_dict.items():

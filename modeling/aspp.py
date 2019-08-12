@@ -1,8 +1,13 @@
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+
+from deeplab_xception.modeling.sync_batchnorm.batchnorm import SynchronizedBatchNorm2d
+
 
 class _ASPPModule(nn.Module):
     def __init__(self, inplanes, planes, kernel_size, padding, dilation, BatchNorm):
@@ -32,14 +37,8 @@ class _ASPPModule(nn.Module):
                 m.bias.data.zero_()
 
 class ASPP(nn.Module):
-    def __init__(self, backbone, output_stride, BatchNorm):
+    def __init__(self, inplanes, output_stride, BatchNorm):
         super(ASPP, self).__init__()
-        if backbone == 'drn':
-            inplanes = 512
-        elif backbone == 'mobilenet':
-            inplanes = 320
-        else:
-            inplanes = 2048
         if output_stride == 16:
             dilations = [1, 6, 12, 18]
         elif output_stride == 8:
